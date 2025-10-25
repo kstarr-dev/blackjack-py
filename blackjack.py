@@ -33,9 +33,9 @@ def draw_card():
     return (get_rank(), get_suit())
 
 def draw_hand(num_cards):
-    """Draws a random hand of cards as a list of (rank, suit) tuples"""
+    """Draws num_cards cards and appends them to the given hand (or creates a new one)."""
     hand = []
-    for i in range(num_cards):
+    for _ in range(num_cards):
         hand.append(draw_card())
     return hand
 
@@ -65,10 +65,38 @@ def evaluate_hand(hand):
 
     return total
 
-# Example usage:
-hand = draw_hand(2)
-print("Your hand:")
-for rank, suit in hand:
-    print(f"{rank} of {suit}")
+def display_hand(hand, is_dealer=False, reveal_all=False):
+    """Displays the hand. If dealer and not revealing all, only show one card."""
+    print("Dealer's hand:" if is_dealer else "Your hand:")
 
-print("Total value:", evaluate_hand(hand))
+    for i, (rank, suit) in enumerate(hand):
+        if is_dealer and not reveal_all and i > 0:
+            print("Hidden card")
+        else:
+            print(f"{rank} of {suit}")
+
+# Draw the hand for player, and dealer
+player_hand = draw_hand(2)
+dealer_hand = draw_hand(2)
+
+display_hand(player_hand, False, True)
+print("\n")
+display_hand(dealer_hand, True, False)
+
+choice = None
+
+# Simulates a game of blackjack on the player side, evaluates multiple conditions for continuing or stopping the player's turn.
+while choice is not "S":
+    if evaluate_hand(player_hand) == 21:
+        print("Blackjack!")
+        break
+    elif choice == "S":
+        print(f"You have decided to stay. You're total value is {evaluate_hand(player_hand)}")
+        break
+    elif evaluate_hand(player_hand) > 21:
+        print("You bust!")
+        break
+    elif choice == "H":
+        player_hand.append(draw_card())
+    else:
+        choice = input(f"\nYou're current hand value is {evaluate_hand(player_hand)}, would you like to hit (H) or stay (S): ").upper()
