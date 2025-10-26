@@ -39,6 +39,11 @@ def draw_hand(num_cards):
         hand.append(draw_card())
     return hand
 
+def add_to_hand(hand):
+    card = draw_card()
+    print(f"New card: {card[0]} of {card[1]}")
+    hand.append(card)
+
 def evaluate_card(rank):
     """Returns the value of a single card rank"""
     if rank in ["Jack", "Queen", "King"]:
@@ -84,19 +89,59 @@ print("\n")
 display_hand(dealer_hand, True, False)
 
 choice = None
+player_bust = None
+dealer_bust = None
 
 # Simulates a game of blackjack on the player side, evaluates multiple conditions for continuing or stopping the player's turn.
-while choice is not "S":
+while True:
     if evaluate_hand(player_hand) == 21:
         print("Blackjack!")
         break
-    elif choice == "S":
-        print(f"You have decided to stay. You're total value is {evaluate_hand(player_hand)}")
-        break
-    elif evaluate_hand(player_hand) > 21:
-        print("You bust!")
-        break
     elif choice == "H":
-        player_hand.append(draw_card())
+        add_to_hand(player_hand)
+
+        # Evaluate if the new hand is over 21
+        if evaluate_hand(player_hand) > 21:
+            print("You bust!")
+            player_bust = True
+            break
+
+    choice = input(f"\nYour current hand value is {evaluate_hand(player_hand)}, would you like to hit (H) or stay (S): ").upper()
+    if choice == "S":
+        print(f"You decided to stay with a total value of {evaluate_hand(player_hand)}.")
+        break
+
+print("\nDealer's Turn\n")
+display_hand(dealer_hand, True, True)
+print(f"Dealer's Current Total: {evaluate_hand(dealer_hand)}")
+
+# Handles adding cards for the dealer side, per rules they always need to draw a card unless they have a minimum hand value of 17
+while True:
+    if evaluate_hand(dealer_hand) >= 17:
+        print("Dealer stays")
+        break
+    elif evaluate_hand(dealer_hand) == 21:
+        print("Dealer Blackjack!")
+        break
     else:
-        choice = input(f"\nYou're current hand value is {evaluate_hand(player_hand)}, would you like to hit (H) or stay (S): ").upper()
+        add_to_hand(dealer_hand)
+
+        if evaluate_hand(dealer_hand) > 21:
+            dealer_bust = True
+            break
+
+# Determine who won the game
+if player_bust:
+    print("\nYou bust! House wins!")
+elif dealer_bust:
+    print("\nDealer busts! You win!")
+else:
+    player_total = evaluate_hand(player_hand)
+    dealer_total = evaluate_hand(dealer_hand)
+
+    if player_total > dealer_total:
+        print("\nYou win!")
+    elif player_total < dealer_total:
+        print("\nHouse wins!")
+    else:
+        print("\nPush (tie).")
